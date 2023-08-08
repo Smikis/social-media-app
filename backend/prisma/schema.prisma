@@ -1,0 +1,44 @@
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id           String    @id @default(auto()) @map("_id") @db.ObjectId
+  email        String    @unique
+  username     String // e.g. John doe  
+  tag          String    @unique // e.g. @johndoe
+  passwordHash String
+  posts        Post[]
+  createdAt    DateTime  @default(now())
+  followers    String[]
+  following    String[]
+  pfp          String?   @default("https://upload.wikimedia.org/wikipedia/commons/2/2c/Default_pfp.svg")
+  comments     Comment[]
+}
+
+model Post {
+  id          String    @id @default(auto()) @map("_id") @db.ObjectId
+  description String?
+  imageLink   String
+  author      User      @relation(fields: [authorId], references: [id])
+  authorId    String    @db.ObjectId
+  likes       Int       @default(0)
+  comments    Comment[]
+  shares      Int       @default(0)
+  createdAt   DateTime  @default(now())
+}
+
+model Comment {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  post      Post     @relation(fields: [postId], references: [id])
+  postId    String   @db.ObjectId
+  author    User     @relation(fields: [authorId], references: [id])
+  authorId  String   @db.ObjectId
+  content   String
+  createdAt DateTime @default(now())
+}
